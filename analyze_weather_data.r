@@ -10,9 +10,9 @@ dir.create(path = "raw_data", showWarnings = FALSE)
 dir.create(path = "output", showWarnings = FALSE)
 
 
-##########################################
-### Historical climate data for Ottawa ###
-##########################################
+##################################################
+### Getting historical climate data for Ottawa ###
+##################################################
 ### Getting the first day of the month for the date range I want to cover
 ## Environment Canada will return a year's worth of data if you give it Jan 1
 ## as a parameter for the month and day
@@ -74,7 +74,6 @@ if(length(RawDataFiles) == 1){
 ### Cleaning data ###
 #####################
 
-
 ### Making all the variables that have flag in their name character variables.
 ## I want to combine my list of dataframes into one big dataframe with all my
 ## data. To do that the variables all need to be of the same time. Some of the
@@ -91,8 +90,8 @@ for(i in 1:length(ClimateDataRaw)){
 
 }
 
+### Combining the list of dataframes into one dataframe
 ClimateData <- bind_rows(ClimateDataRaw)
-
 
 ### Cleaning up column names
 names(ClimateData) <- gsub(x = names(ClimateData), pattern = "\\.", replacement = "")
@@ -117,6 +116,7 @@ ColumnNotEmpty <- apply(
 
 ### Keeping only columns with data
 ClimateData <- ClimateData[ ,ColumnNotEmpty]
+
 
 
 ########################################
@@ -148,12 +148,16 @@ YearlyMeanTemp <- aggregate(
   FUN = mean
 )
 
+### Sorting by average temperature
 YearlyMeanTemp <- YearlyMeanTemp[
   with(YearlyMeanTemp, order(MeanTempC, decreasing = TRUE)),
 
 ]
 
+### Resetting row numbers after sorting
 row.names(YearlyMeanTemp) <- NULL
 
+### A scatter plot to show mean summer temp in each year
 ggplot(data = YearlyMeanTemp, aes(x = Year, y = MeanTempC)) +
-geom_point()
+geom_point() +
+theme_minimal()
