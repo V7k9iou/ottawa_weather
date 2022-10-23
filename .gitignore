@@ -37,3 +37,10 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# raw data and output folders
+/raw_data
+/output
+
+# os files
+.DS_Store
