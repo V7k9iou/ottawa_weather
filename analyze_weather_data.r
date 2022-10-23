@@ -5,6 +5,10 @@ setwd("/Users/davidjacques/Documents/Projects/ottawa_weather/")
 library(pacman)
 p_load(dplyr, lubridate, ggplot2)
 
+### Creating folders if they're not there
+dir.create(path = "raw_data", showWarnings = FALSE)
+dir.create(path = "output", showWarnings = FALSE)
+
 
 ##########################################
 ### Historical climate data for Ottawa ###
