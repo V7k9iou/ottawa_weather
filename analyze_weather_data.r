@@ -64,6 +64,8 @@ if(length(RawDataFiles) == 1){
 
     setTxtProgressBar(pb, i)
   }
+  ### Cloing progress bar
+  close(pb)
 
   saveRDS(object = ClimateDataRaw, file = "./raw_data/ClimateDataRaw.rds")
 }
@@ -123,7 +125,7 @@ ClimateData <- ClimateData[ ,ColumnNotEmpty]
 ### Getting just data for the summer ###
 ########################################
 
-### Subsetting for days on and between 21 June – 23 September
+### Subsetting for days on and between 21 June and 23 September
 SummerDays <- c(
   which(ClimateData$Day %in% 21:30 & ClimateData$Month == 6),
   which(ClimateData$Month %in% 7:8),
@@ -142,22 +144,43 @@ if(is.na(ClimateSummerData$MeanTempC[ClimateSummerData$DateTime == "2022-09-23"]
 ##############################################################
 ### Calculating average tempuratures in each year's summer ###
 ##############################################################
-YearlyMeanTemp <- aggregate(
+SummerMeanTemp <- aggregate(
   MeanTempC ~ Year,
   data = ClimateSummerData,
   FUN = mean
 )
 
-### Sorting by average temperature
-YearlyMeanTemp <- YearlyMeanTemp[
-  with(YearlyMeanTemp, order(MeanTempC, decreasing = TRUE)),
+### Rouding to 1 significant figure because that's the data's precission
+SummerMeanTemp$MeanTempC <- round(x = SummerMeanTemp$MeanTempC, digits = 1)
+
+### Ranking mean tempuratures
+## I have to add a minus to that the highest value ranks 1st
+SummerMeanTemp$Rank <- rank(-SummerMeanTemp$MeanTempC, ties.method= "min")
+
+
+### Sorting by mean temperature
+SummerMeanTemp <- SummerMeanTemp[
+  with(SummerMeanTemp, order(MeanTempC, decreasing = TRUE)),
 
 ]
 
 ### Resetting row numbers after sorting
-row.names(YearlyMeanTemp) <- NULL
+row.names(SummerMeanTemp) <- NULL
+
+### Writting out results
+write.csv(x = SummerMeanTemp, file = "./output/Ottawa_summer_mean_temp.csv")
+
+### Adding a variable to identify the most recent year
+SummerMeanTemp$MostRecent <- NA
+SummerMeanTemp$MostRecent[SummerMeanTemp$Year == max(SummerMeanTemp$Year)] <- "Most recent"
 
 ### A scatter plot to show mean summer temp in each year
-ggplot(data = YearlyMeanTemp, aes(x = Year, y = MeanTempC)) +
+ggplot(data = SummerMeanTemp, aes(x = Year, y = MeanTempC, colour = MostRecent)) +
 geom_point() +
-theme_minimal()
+scale_colour_manual(values = c("Most recent" = "#FD001A")) +
+theme_minimal() +
+theme(legend.position = "none")
+
+ggsave(file = "./output/Ottawa_summer_mean_temp.pdf")
+
+
